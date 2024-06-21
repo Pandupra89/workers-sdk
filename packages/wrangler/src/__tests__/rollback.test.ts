@@ -119,7 +119,7 @@ describe("rollback", () => {
 		mockPostDeployment();
 
 		mockPrompt({
-			text: "Please provide a message for this rollback (120 characters max, optional)?",
+			text: "Please provide an optional message for this rollback (120 characters max)?",
 			result: "Test rollback",
 		});
 
@@ -168,7 +168,7 @@ describe("rollback", () => {
 		mockPostDeployment(true);
 
 		mockPrompt({
-			text: "Please provide a message for this rollback (120 characters max, optional)?",
+			text: "Please provide an optional message for this rollback (120 characters max)?",
 			result: "Test rollback",
 		});
 
@@ -180,7 +180,7 @@ describe("rollback", () => {
 		// We will have an additional confirmation
 		mockConfirm({
 			text:
-				"The following secrets have changed since the target version was deployed. Please confirm you wish to continue with the rollback" +
+				`The following secrets have changed since version rollback-version was deployed. Please confirm you wish to continue with the rollback` +
 				"\n  * SECRET\n  * SECRET_TWO",
 			result: true,
 		});
