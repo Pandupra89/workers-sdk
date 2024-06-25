@@ -532,7 +532,7 @@ export async function startDev(args: StartDevOptions) {
 					keys: ["l"],
 					label: () =>
 						`turn ${devEnv.config.latestConfig?.dev?.remote ? "on" : "off"} local mode`,
-					handler: ({ printIntructions }) => {
+					handler: ({ printInstructions }) => {
 						devEnv.config.patch({
 							dev: {
 								...devEnv.config.latestConfig?.dev,
@@ -541,15 +541,15 @@ export async function startDev(args: StartDevOptions) {
 						});
 
 						console.clear();
-						printIntructions();
+						printInstructions();
 					},
 				},
 				{
 					keys: ["c"],
 					label: "clear console",
-					handler: async ({ printIntructions }) => {
+					handler: async ({ printInstructions }) => {
 						console.clear();
-						printIntructions();
+						printInstructions();
 					},
 				},
 				{
