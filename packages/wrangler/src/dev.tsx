@@ -510,60 +510,57 @@ export async function startDev(args: StartDevOptions) {
 				});
 			}
 
-			hotkeys({
-				logger,
-				options: [
-					{
-						keys: ["b"],
-						label: "open a browser",
-						handler: async () => {
-							const { proxyWorker } = await devEnv.proxy.ready.promise;
-							const url = await proxyWorker.ready; // TODO: get url from line above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
-							await openInBrowser(url.href);
-						},
+			hotkeys([
+				{
+					keys: ["b"],
+					label: "open a browser",
+					handler: async () => {
+						const { proxyWorker } = await devEnv.proxy.ready.promise;
+						const url = await proxyWorker.ready; // TODO: get url from line above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
+						await openInBrowser(url.href);
 					},
-					{
-						keys: ["d"],
-						label: "open devtools",
-						handler: async () => {
-							// TODO: get inspector url like above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
-							// await openInspector(port, props.worker);
-						},
+				},
+				{
+					keys: ["d"],
+					label: "open devtools",
+					handler: async () => {
+						// TODO: get inspector url like above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
+						// await openInspector(port, props.worker);
 					},
-					{
-						keys: ["l"],
-						label: () =>
-							`turn ${devEnv.config.latestConfig?.dev?.remote ? "on" : "off"} local mode`,
-						handler: ({ printIntructions }) => {
-							devEnv.config.patch({
-								dev: {
-									...devEnv.config.latestConfig?.dev,
-									remote: !devEnv.config.latestConfig?.dev?.remote,
-								},
-							});
+				},
+				{
+					keys: ["l"],
+					label: () =>
+						`turn ${devEnv.config.latestConfig?.dev?.remote ? "on" : "off"} local mode`,
+					handler: ({ printIntructions }) => {
+						devEnv.config.patch({
+							dev: {
+								...devEnv.config.latestConfig?.dev,
+								remote: !devEnv.config.latestConfig?.dev?.remote,
+							},
+						});
 
-							console.clear();
-							printIntructions();
-						},
+						console.clear();
+						printIntructions();
 					},
-					{
-						keys: ["c"],
-						label: "clear console",
-						handler: async ({ printIntructions }) => {
-							console.clear();
-							printIntructions();
-						},
+				},
+				{
+					keys: ["c"],
+					label: "clear console",
+					handler: async ({ printIntructions }) => {
+						console.clear();
+						printIntructions();
 					},
-					{
-						keys: ["x", "q", "ctrl+c"],
-						label: "to exit",
-						handler: async () => {
-							await devEnv.teardown();
-							process.exit();
-						},
+				},
+				{
+					keys: ["x", "q", "ctrl+c"],
+					label: "to exit",
+					handler: async () => {
+						await devEnv.teardown();
+						process.exit();
 					},
-				],
-			});
+				},
+			]);
 		}
 
 		// eslint-disable-next-line no-inner-declarations
