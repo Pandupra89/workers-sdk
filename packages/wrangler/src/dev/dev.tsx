@@ -368,18 +368,21 @@ const portUsablePromise = new Promise<void>(
 let blockBrowserOpen = false;
 
 function InteractiveDevSession(props: DevProps) {
-	const toggles = useHotkeys({
-		initial: {
-			local: props.initialMode === "local",
-			tunnel: false,
-		},
-		inspectorPort: props.inspectorPort,
-		inspect: props.inspect,
-		localProtocol: props.localProtocol,
-		forceLocal: props.forceLocal,
-		worker: props.name,
-		experimentalDevEnv: props.experimentalDevEnv,
-	});
+	const hotkeysInital = {
+		local: props.initialMode === "local",
+		tunnel: false,
+	};
+	const toggles = props.experimentalDevEnv
+		? hotkeysInital
+		: // eslint-disable-next-line react-hooks/rules-of-hooks
+			useHotkeys({
+				initial: hotkeysInital,
+				inspectorPort: props.inspectorPort,
+				inspect: props.inspect,
+				localProtocol: props.localProtocol,
+				forceLocal: props.forceLocal,
+				worker: props.name,
+			});
 
 	ip = props.initialIp;
 	port = props.initialPort;
@@ -992,12 +995,7 @@ function useHotkeys(props: {
 	localProtocol: "http" | "https";
 	forceLocal: boolean | undefined;
 	worker: string | undefined;
-	experimentalDevEnv: boolean;
 }) {
-	if (props.experimentalDevEnv) {
-		return props.initial;
-	}
-
 	const { initial, inspectorPort, inspect, localProtocol, forceLocal } = props;
 	// UGH, we should put port in context instead
 	const [toggles, setToggles] = useState(initial);
