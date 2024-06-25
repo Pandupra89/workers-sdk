@@ -12,7 +12,6 @@ import { validateNodeCompat } from "./deployment-bundle/node-compat";
 import Dev from "./dev/dev";
 import { getVarsForDev } from "./dev/dev-vars";
 import { getLocalPersistencePath } from "./dev/get-local-persistence-path";
-import { openInspector } from "./dev/inspect";
 import { maybeRegisterLocalWorker } from "./dev/local";
 import { startDevServer } from "./dev/start-server";
 import { UserError } from "./errors";
