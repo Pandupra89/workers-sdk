@@ -5,7 +5,7 @@ import { watch } from "chokidar";
 import getPort from "get-port";
 import { render } from "ink";
 import { DevEnv } from "./api";
-import { hotkeys } from "./cli-hotkeys";
+import hotkeys from "./cli-hotkeys";
 import { findWranglerToml, printBindings, readConfig } from "./config";
 import { getEntry } from "./deployment-bundle/entry";
 import { validateNodeCompat } from "./deployment-bundle/node-compat";
@@ -510,55 +510,59 @@ export async function startDev(args: StartDevOptions) {
 				});
 			}
 
-			function printHotkeyInstructions() {
-				const remote = devEnv.config.latestConfig?.dev?.remote;
-				const instructions = `[b] open a browser, [d] open devtools, [l] turn ${remote ? "on" : "off"} local mode, [c] clear console, [x] to exit`;
+			hotkeys({
+				logger,
+				options: [
+					{
+						keys: ["b"],
+						label: "open a browser",
+						handler: async () => {
+							const { proxyWorker } = await devEnv.proxy.ready.promise;
+							const url = await proxyWorker.ready; // TODO: get url from line above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
+							await openInBrowser(url.href);
+						},
+					},
+					{
+						keys: ["d"],
+						label: "open devtools",
+						handler: async () => {
+							// TODO: get inspector url like above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
+							// await openInspector(port, props.worker);
+						},
+					},
+					{
+						keys: ["l"],
+						label: () =>
+							`turn ${devEnv.config.latestConfig?.dev?.remote ? "on" : "off"} local mode`,
+						handler: ({ printIntructions }) => {
+							devEnv.config.patch({
+								dev: {
+									...devEnv.config.latestConfig?.dev,
+									remote: !devEnv.config.latestConfig?.dev?.remote,
+								},
+							});
 
-				logger.log(
-					`╭──${"─".repeat(instructions.length)}──╮\n` +
-						`│  ${instructions}  │\n` +
-						`╰──${"─".repeat(instructions.length)}──╯\n`
-				);
-			}
-
-			printHotkeyInstructions();
-			hotkeys(async (key) => {
-				switch (key.toLowerCase()) {
-					case "b": {
-						const { proxyWorker } = await devEnv.proxy.ready.promise;
-						const url = await proxyWorker.ready; // TODO: get url from line above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
-						await openInBrowser(url.href);
-						break;
-					}
-					case "d": {
-						// TODO: get inspector url like above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
-						// await openInspector(port, props.worker);
-						break;
-					}
-					case "l": {
-						// TODO: implement forceLocal
-						devEnv.config.patch({
-							dev: {
-								...devEnv.config.latestConfig?.dev,
-								remote: !devEnv.config.latestConfig?.dev?.remote,
-							},
-						});
-						console.clear();
-						printHotkeyInstructions();
-						break;
-					}
-					case "c": {
-						console.clear();
-						printHotkeyInstructions();
-						break;
-					}
-					case "q":
-					case "x":
-					case "ctrl+c": {
-						await devEnv.teardown();
-						process.exit();
-					}
-				}
+							console.clear();
+							printIntructions();
+						},
+					},
+					{
+						keys: ["c"],
+						label: "clear console",
+						handler: async ({ printIntructions }) => {
+							console.clear();
+							printIntructions();
+						},
+					},
+					{
+						keys: ["x", "q", "ctrl+c"],
+						label: "to exit",
+						handler: async () => {
+							await devEnv.teardown();
+							process.exit();
+						},
+					},
+				],
 			});
 		}
 
