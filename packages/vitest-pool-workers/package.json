@@ -69,6 +69,7 @@
 		"@types/semver": "^7.5.1",
 		"@vitest/runner": "1.3.x - 1.5.x",
 		"@vitest/snapshot": "1.3.x - 1.5.x",
+		"@vitest/ui": "1.3.x - 1.5.x",
 		"capnp-ts": "^0.7.0",
 		"capnpc-ts": "^0.7.0",
 		"ts-dedent": "^2.2.0",
@@ -79,6 +80,7 @@
 	"peerDependencies": {
 		"@vitest/runner": "1.3.x - 1.5.x",
 		"@vitest/snapshot": "1.3.x - 1.5.x",
+		"@vitest/ui": "1.3.x - 1.5.x",
 		"vitest": "1.3.x - 1.5.x"
 	},
 	"volta": {
