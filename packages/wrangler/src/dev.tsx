@@ -5,18 +5,21 @@ import { watch } from "chokidar";
 import getPort from "get-port";
 import { render } from "ink";
 import { DevEnv } from "./api";
+import { hotkeys } from "./cli-hotkeys";
 import { findWranglerToml, printBindings, readConfig } from "./config";
 import { getEntry } from "./deployment-bundle/entry";
 import { validateNodeCompat } from "./deployment-bundle/node-compat";
 import Dev from "./dev/dev";
 import { getVarsForDev } from "./dev/dev-vars";
 import { getLocalPersistencePath } from "./dev/get-local-persistence-path";
+import { openInspector } from "./dev/inspect";
 import { maybeRegisterLocalWorker } from "./dev/local";
 import { startDevServer } from "./dev/start-server";
 import { UserError } from "./errors";
 import { run } from "./experimental-flags";
 import { logger } from "./logger";
 import * as metrics from "./metrics";
+import openInBrowser from "./open-in-browser";
 import { getAssetPaths, getSiteAssetPaths } from "./sites";
 import { getAccountFromCache, loginOrRefreshIfRequired } from "./user";
 import { collectKeyValues } from "./utils/collectKeyValues";
@@ -506,6 +509,57 @@ export async function startDev(args: StartDevOptions) {
 					);
 				});
 			}
+
+			function printHotkeyInstructions() {
+				const remote = devEnv.config.latestConfig?.dev?.remote;
+				const instructions = `[b] open a browser, [d] open devtools, [l] turn ${remote ? "on" : "off"} local mode, [c] clear console, [x] to exit`;
+
+				logger.log(
+					`╭──${"─".repeat(instructions.length)}──╮\n` +
+						`│  ${instructions}  │\n` +
+						`╰──${"─".repeat(instructions.length)}──╯\n`
+				);
+			}
+
+			printHotkeyInstructions();
+			hotkeys(async (key) => {
+				switch (key.toLowerCase()) {
+					case "b": {
+						const { proxyWorker } = await devEnv.proxy.ready.promise;
+						const url = await proxyWorker.ready; // TODO: get url from line above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
+						await openInBrowser(url.href);
+						break;
+					}
+					case "d": {
+						// TODO: get inspector url like above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
+						// await openInspector(port, props.worker);
+						break;
+					}
+					case "l": {
+						// TODO: implement forceLocal
+						devEnv.config.patch({
+							dev: {
+								...devEnv.config.latestConfig?.dev,
+								remote: !devEnv.config.latestConfig?.dev?.remote,
+							},
+						});
+						console.clear();
+						printHotkeyInstructions();
+						break;
+					}
+					case "c": {
+						console.clear();
+						printHotkeyInstructions();
+						break;
+					}
+					case "q":
+					case "x":
+					case "ctrl+c": {
+						await devEnv.teardown();
+						process.exit();
+					}
+				}
+			});
 		}
 
 		// eslint-disable-next-line no-inner-declarations

@@ -378,6 +378,7 @@ function InteractiveDevSession(props: DevProps) {
 		localProtocol: props.localProtocol,
 		forceLocal: props.forceLocal,
 		worker: props.name,
+		experimentalDevEnv: props.experimentalDevEnv,
 	});
 
 	ip = props.initialIp;
@@ -396,26 +397,31 @@ function InteractiveDevSession(props: DevProps) {
 	return (
 		<>
 			<DevSession {...props} local={toggles.local} onReady={onReady} />
-			<Box borderStyle="round" paddingLeft={1} paddingRight={1}>
-				<Text bold={true}>[b]</Text>
-				<Text> open a browser, </Text>
-				{props.inspect ? (
-					<>
-						<Text bold={true}>[d]</Text>
-						<Text> open Devtools, </Text>
-					</>
-				) : null}
-				{!props.forceLocal ? (
-					<>
-						<Text bold={true}>[l]</Text>
-						<Text> {toggles.local ? "turn off" : "turn on"} local mode, </Text>
-					</>
-				) : null}
-				<Text bold={true}>[c]</Text>
-				<Text> clear console, </Text>
-				<Text bold={true}>[x]</Text>
-				<Text> to exit</Text>
-			</Box>
+			{!props.experimentalDevEnv && (
+				<Box borderStyle="round" paddingLeft={1} paddingRight={1}>
+					<Text bold={true}>[b]</Text>
+					<Text> open a browser, </Text>
+					{props.inspect ? (
+						<>
+							<Text bold={true}>[d]</Text>
+							<Text> open Devtools, </Text>
+						</>
+					) : null}
+					{!props.forceLocal ? (
+						<>
+							<Text bold={true}>[l]</Text>
+							<Text>
+								{" "}
+								{toggles.local ? "turn off" : "turn on"} local mode,{" "}
+							</Text>
+						</>
+					) : null}
+					<Text bold={true}>[c]</Text>
+					<Text> clear console, </Text>
+					<Text bold={true}>[x]</Text>
+					<Text> to exit</Text>
+				</Box>
+			)}
 		</>
 	);
 }
@@ -986,7 +992,12 @@ function useHotkeys(props: {
 	localProtocol: "http" | "https";
 	forceLocal: boolean | undefined;
 	worker: string | undefined;
+	experimentalDevEnv: boolean;
 }) {
+	if (props.experimentalDevEnv) {
+		return props.initial;
+	}
+
 	const { initial, inspectorPort, inspect, localProtocol, forceLocal } = props;
 	// UGH, we should put port in context instead
 	const [toggles, setToggles] = useState(initial);
