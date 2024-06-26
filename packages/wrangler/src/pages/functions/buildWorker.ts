@@ -1,9 +1,13 @@
 import { access, cp, lstat, rm } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import path, { join, resolve } from "node:path";
 import { build as esBuild } from "esbuild";
 import { nanoid } from "nanoid";
 import { bundleWorker } from "../../deployment-bundle/bundle";
-import { findAdditionalModules } from "../../deployment-bundle/find-additional-modules";
+import { getEntryPointFromMetafile } from "../../deployment-bundle/entry-point-from-metafile";
+import {
+	findAdditionalModules,
+	writeAdditionalModules,
+} from "../../deployment-bundle/find-additional-modules";
 import {
 	createModuleCollector,
 	noopModuleCollector,
@@ -16,7 +20,7 @@ import type { BundleResult } from "../../deployment-bundle/bundle";
 import type { Entry } from "../../deployment-bundle/entry";
 import type { NodeJSCompatMode } from "../../deployment-bundle/node-compat";
 import type { CfModule } from "../../deployment-bundle/worker";
-import type { Plugin } from "esbuild";
+import type { BuildOptions, BuildResult, Plugin } from "esbuild";
 
 export type Options = {
 	routesModule: string;
@@ -233,6 +237,7 @@ export function buildRawWorker({
 		external,
 		plugins: [
 			...plugins,
+			additionalModulesWriterPlugin(moduleCollector.modules, entry, onEnd),
 			buildNotifierPlugin(onEnd),
 			...(externalModules
 				? [
@@ -363,6 +368,39 @@ export function buildNotifierPlugin(onEnd: () => void): Plugin {
 					onEnd();
 				}
 			});
+		},
+	};
+}
+
+/**
+ *
+ */
+export function additionalModulesWriterPlugin(
+	modules: CfModule[],
+	entry: Entry,
+	onEnd: () => void
+): Plugin {
+	return {
+		name: "wrangler-additional-modules-writer",
+		setup(pluginBuild) {
+			pluginBuild.onEnd(
+				async (result: BuildResult<BuildOptions & { metafile: true }>) => {
+					const entryPoint = getEntryPointFromMetafile(
+						entry.file,
+						result.metafile
+					);
+					const resolvedEntryPointPath = path.resolve(
+						entry.directory,
+						entryPoint.relativePath
+					);
+
+					await writeAdditionalModules(
+						modules,
+						path.dirname(resolvedEntryPointPath)
+					);
+					onEnd();
+				}
+			);
 		},
 	};
 }

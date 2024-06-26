@@ -417,6 +417,7 @@ export const Handler = async (args: PagesDevArguments) => {
 				getPagesTmpDir(),
 				`./bundledWorker-${Math.random()}.mjs`
 			);
+
 			runBuild = async () => {
 				try {
 					await buildRawWorker({
@@ -428,26 +429,23 @@ export const Handler = async (args: PagesDevArguments) => {
 						nodejsCompatMode,
 						local: true,
 						sourcemap: true,
-						watch: false,
+						// Advanced Mode projects rely on esbuild's watch mode alone
+						watch: true,
 						onEnd: () => scriptReadyResolve(),
 						defineNavigatorUserAgent,
 					});
 				} catch (e: unknown) {
-					logger.warn("Failed to bundle _worker.js.", e);
+					/*
+					 * do not start the `pages dev` session if we encounter errors
+					 * while attempting to build the Worker. These flag underlying
+					 * issues in the _worker.js code, and should be addressed before
+					 */
+					throw new FatalError("Failed to bundle _worker.js\n" + `${e}`, 1);
 				}
 			};
 		}
 
 		await runBuild();
-		watch([workerScriptPath], {
-			persistent: true,
-			ignoreInitial: true,
-		}).on("all", async (event) => {
-			if (event === "unlink") {
-				return;
-			}
-			await runBuild();
-		});
 	} else if (usingFunctions) {
 		// Try to use Functions
 		scriptPath = join(

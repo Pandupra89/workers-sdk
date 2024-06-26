@@ -137,75 +137,6 @@ describe("pages dev", () => {
 	);
 
 	e2eTest(
-		"should modify worker during dev session (_worker)",
-		async ({ run, seed, waitForReady, waitForReload }) => {
-			await seed({
-				"_worker.js": dedent`
-					export default {
-						fetch(request, env) {
-							return new Response("Hello World!")
-						}
-					}`,
-			});
-			const port = await getPort();
-			const worker = run(`wrangler pages dev --port ${port} .`);
-			const { url } = await waitForReady(worker);
-
-			await expect(
-				fetch(url).then((r) => r.text())
-			).resolves.toMatchInlineSnapshot('"Hello World!"');
-
-			await seed({
-				"_worker.js": dedent`
-						export default {
-							fetch(request, env) {
-								return new Response("Updated Worker!")
-							}
-						}`,
-			});
-
-			await waitForReload(worker);
-
-			await expect(
-				fetch(url).then((r) => r.text())
-			).resolves.toMatchInlineSnapshot('"Updated Worker!"');
-		}
-	);
-
-	e2eTest(
-		"should modify worker during dev session (Functions)",
-		async ({ run, seed, waitForReady, waitForReload }) => {
-			const port = await getPort();
-			const worker = run(`wrangler pages dev --port ${port} .`);
-
-			await seed({
-				"functions/_middleware.js": dedent`
-					export async function onRequest() {
-						return new Response("Hello World!")
-					}`,
-			});
-
-			const { url } = await waitForReady(worker);
-
-			await expect(
-				fetch(url).then((r) => r.text())
-			).resolves.toMatchInlineSnapshot('"Hello World!"');
-
-			await seed({
-				"functions/_middleware.js": dedent`
-					export async function onRequest() {
-						return new Response("Updated Worker!")
-					}`,
-			});
-
-			await waitForReload(worker);
-
-			await expect(
-				fetch(url).then((r) => r.text())
-			).resolves.toMatchInlineSnapshot('"Updated Worker!"');
-		}
-	);
-	e2eTest(
 		"should support wrangler.toml",
 		async ({ seed, run, waitForReady }) => {
 			await seed({
@@ -639,4 +570,158 @@ describe("pages dev", () => {
 			);
 		}
 	);
+
+	describe("watch mode", () => {
+		e2eTest(
+			"should modify worker during dev session (Functions)",
+			async ({ run, seed, waitForReady, waitForReload }) => {
+				const port = await getPort();
+				const worker = run(`wrangler pages dev --port ${port} .`);
+
+				await seed({
+					"functions/_middleware.js": dedent`
+						export async function onRequest() {
+							return new Response("Hello World!")
+						}`,
+				});
+
+				const { url } = await waitForReady(worker);
+
+				await expect(
+					fetch(url).then((r) => r.text())
+				).resolves.toMatchInlineSnapshot('"Hello World!"');
+
+				await seed({
+					"functions/_middleware.js": dedent`
+						export async function onRequest() {
+							return new Response("Updated Worker!")
+						}`,
+				});
+
+				await waitForReload(worker);
+
+				await expect(
+					fetch(url).then((r) => r.text())
+				).resolves.toMatchInlineSnapshot('"Updated Worker!"');
+			}
+		);
+
+		e2eTest(
+			"should modify worker during dev session (_worker)",
+			async ({ run, seed, waitForReady, waitForReload }) => {
+				await seed({
+					"_worker.js": dedent`
+						export default {
+							fetch(request, env) {
+								return new Response("Hello World!")
+							}
+						}`,
+				});
+				const port = await getPort();
+				const worker = run(`wrangler pages dev --port ${port} .`);
+				const { url } = await waitForReady(worker);
+
+				await expect(
+					fetch(url).then((r) => r.text())
+				).resolves.toMatchInlineSnapshot('"Hello World!"');
+
+				await seed({
+					"_worker.js": dedent`
+							export default {
+								fetch(request, env) {
+									return new Response("Updated Worker!")
+								}
+							}`,
+				});
+
+				await waitForReload(worker);
+
+				await expect(
+					fetch(url).then((r) => r.text())
+				).resolves.toMatchInlineSnapshot('"Updated Worker!"');
+			}
+		);
+
+		e2eTest(
+			"should support modifying dependencies during dev session (_worker)",
+			async ({ run, seed, waitForReady, waitForReload }) => {
+				await seed({
+					"pets/bear.js": dedent`
+						export const bear = "BEAR!"
+						`,
+				});
+
+				await seed({
+					"_worker.js": dedent`
+						import { bear } from "./pets/bear"
+						export default {
+							fetch(request, env) {
+								return new Response(bear)
+							}
+						}`,
+				});
+				const port = await getPort();
+				const worker = run(`wrangler pages dev --port ${port} .`);
+				const { url } = await waitForReady(worker);
+
+				await expect(
+					fetch(url).then((r) => r.text())
+				).resolves.toMatchInlineSnapshot('"BEAR!"');
+
+				await seed({
+					"pets/bear.js": dedent`
+						export const bear = "We love BEAR!"
+						`,
+				});
+
+				await waitForReload(worker);
+
+				await expect(
+					fetch(url).then((r) => r.text())
+				).resolves.toMatchInlineSnapshot('"We love BEAR!"');
+			}
+		);
+
+		e2eTest(
+			"should support modifying external modules during dev session (_worker)",
+			async ({ run, seed, waitForReady, waitForReload }) => {
+				await seed({
+					"graham.html": dedent`
+						<h1>Graham the dog</h1>
+						`,
+				});
+
+				await seed({
+					"_worker.js": dedent`
+						import html from "./graham.html"
+						export default {
+							fetch(request, env) {
+								return new Response(html)
+							}
+						}`,
+				});
+				const port = await getPort();
+				const worker = run(`wrangler pages dev --port ${port} .`);
+				const { url } = await waitForReady(worker);
+
+				await expect(
+					fetch(url).then((r) => r.text())
+				).resolves.toMatchInlineSnapshot('"<h1>Graham the dog</h1>"');
+
+				await seed({
+					"graham.html": dedent`
+						<h1>Graham is the bestest doggo</h1>
+						`,
+				});
+
+				await waitForReload(worker);
+
+				await expect(
+					fetch(url).then((r) => r.text())
+				).resolves.toMatchInlineSnapshot(
+					'"<h1>Graham is the bestest doggo</h1>"'
+				);
+			}
+		);
+	});
 });
