@@ -12,6 +12,7 @@ import { validateNodeCompat } from "./deployment-bundle/node-compat";
 import Dev from "./dev/dev";
 import { getVarsForDev } from "./dev/dev-vars";
 import { getLocalPersistencePath } from "./dev/get-local-persistence-path";
+import { openInspector } from "./dev/inspect";
 import { maybeRegisterLocalWorker } from "./dev/local";
 import { startDevServer } from "./dev/start-server";
 import { UserError } from "./errors";
@@ -514,8 +515,7 @@ export async function startDev(args: StartDevOptions) {
 					keys: ["b"],
 					label: "open a browser",
 					handler: async () => {
-						const { proxyWorker } = await devEnv.proxy.ready.promise;
-						const url = await proxyWorker.ready; // TODO: get url from line above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
+						const { url } = await devEnv.proxy.ready.promise;
 						await openInBrowser(url.href);
 					},
 				},
@@ -523,8 +523,13 @@ export async function startDev(args: StartDevOptions) {
 					keys: ["d"],
 					label: "open devtools",
 					handler: async () => {
-						// TODO: get inspector url like above when https://github.com/cloudflare/workers-sdk/pull/6124 is merged
-						// await openInspector(port, props.worker);
+						const { inspectorUrl } = await devEnv.proxy.ready.promise;
+
+						// TODO: refactor this function to accept a whole URL and not assume hostname
+						await openInspector(
+							parseInt(inspectorUrl.port),
+							devEnv.config.latestConfig?.name // TODO: this will be set once readConfig is moved into ConfigController in DEVX-1295
+						);
 					},
 				},
 				{
