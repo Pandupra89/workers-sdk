@@ -510,61 +510,63 @@ export async function startDev(args: StartDevOptions) {
 				});
 			}
 
-			hotkeys([
-				{
-					keys: ["b"],
-					label: "open a browser",
-					handler: async () => {
-						const { url } = await devEnv.proxy.ready.promise;
-						await openInBrowser(url.href);
+			if (args.showInteractiveDevSession) {
+				hotkeys([
+					{
+						keys: ["b"],
+						label: "open a browser",
+						handler: async () => {
+							const { url } = await devEnv.proxy.ready.promise;
+							await openInBrowser(url.href);
+						},
 					},
-				},
-				{
-					keys: ["d"],
-					label: "open devtools",
-					handler: async () => {
-						const { inspectorUrl } = await devEnv.proxy.ready.promise;
+					{
+						keys: ["d"],
+						label: "open devtools",
+						handler: async () => {
+							const { inspectorUrl } = await devEnv.proxy.ready.promise;
 
-						// TODO: refactor this function to accept a whole URL and not assume hostname
-						await openInspector(
-							parseInt(inspectorUrl.port),
-							devEnv.config.latestConfig?.name // TODO: this will be set once readConfig is moved into ConfigController in DEVX-1295
-						);
+							// TODO: refactor this function to accept a whole URL and not assume hostname
+							await openInspector(
+								parseInt(inspectorUrl.port),
+								devEnv.config.latestConfig?.name // TODO: this will be set once readConfig is moved into ConfigController in DEVX-1295
+							);
+						},
 					},
-				},
-				{
-					keys: ["l"],
-					label: () =>
-						`turn ${devEnv.config.latestConfig?.dev?.remote ? "on" : "off"} local mode`,
-					handler: ({ printInstructions }) => {
-						devEnv.config.patch({
-							dev: {
-								...devEnv.config.latestConfig?.dev,
-								remote: !devEnv.config.latestConfig?.dev?.remote,
-							},
-						});
+					{
+						keys: ["l"],
+						label: () =>
+							`turn ${devEnv.config.latestConfig?.dev?.remote ? "on" : "off"} local mode`,
+						handler: ({ printInstructions }) => {
+							devEnv.config.patch({
+								dev: {
+									...devEnv.config.latestConfig?.dev,
+									remote: !devEnv.config.latestConfig?.dev?.remote,
+								},
+							});
 
-						console.clear();
-						printInstructions();
+							console.clear();
+							printInstructions();
+						},
 					},
-				},
-				{
-					keys: ["c"],
-					label: "clear console",
-					handler: async ({ printInstructions }) => {
-						console.clear();
-						printInstructions();
+					{
+						keys: ["c"],
+						label: "clear console",
+						handler: async ({ printInstructions }) => {
+							console.clear();
+							printInstructions();
+						},
 					},
-				},
-				{
-					keys: ["x", "q", "ctrl+c"],
-					label: "to exit",
-					handler: async () => {
-						await devEnv.teardown();
-						process.exit();
+					{
+						keys: ["x", "q", "ctrl+c"],
+						label: "to exit",
+						handler: async () => {
+							await devEnv.teardown();
+							process.exit();
+						},
 					},
-				},
-			]);
+				]);
+			}
 		}
 
 		// eslint-disable-next-line no-inner-declarations
