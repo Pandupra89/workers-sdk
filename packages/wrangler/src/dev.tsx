@@ -510,7 +510,8 @@ export async function startDev(args: StartDevOptions) {
 				});
 			}
 
-			if (args.showInteractiveDevSession) {
+			// TODO: set default value with yargs
+			if (process.stdout.isTTY && (args.showInteractiveDevSession ?? true)) {
 				hotkeys([
 					{
 						keys: ["b"],
@@ -562,7 +563,6 @@ export async function startDev(args: StartDevOptions) {
 						label: "to exit",
 						handler: async () => {
 							await devEnv.teardown();
-							process.exit();
 						},
 					},
 				]);
