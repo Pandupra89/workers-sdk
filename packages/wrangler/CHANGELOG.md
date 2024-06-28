@@ -1,5 +1,30 @@
 # wrangler
 
+## 3.63.0
+
+### Minor Changes
+
+- [#6073](https://github.com/cloudflare/workers-sdk/pull/6073) [`7ed675e`](https://github.com/cloudflare/workers-sdk/commit/7ed675e3a43cfd996496bf1be2b31d34bde36664) Thanks [@geelen](https://github.com/geelen)! - Added D1 export support for local databases
+
+### Patch Changes
+
+- [#6124](https://github.com/cloudflare/workers-sdk/pull/6124) [`d03b102`](https://github.com/cloudflare/workers-sdk/commit/d03b10272513e5860c4aab338e2acecd18a990d8) Thanks [@RamIdeas](https://github.com/RamIdeas)! - feat: `url` and `inspectorUrl` properties have been exposed on the worker object returned by `new unstable_DevEnv().startWorker(options)`
+
+- [#6147](https://github.com/cloudflare/workers-sdk/pull/6147) [`02dda3d`](https://github.com/cloudflare/workers-sdk/commit/02dda3d4d130bb9282e73499a78e04945b941ada) Thanks [@penalosa](https://github.com/penalosa)! - refactor: React free dev registry
+
+- [#6127](https://github.com/cloudflare/workers-sdk/pull/6127) [`1568c25`](https://github.com/cloudflare/workers-sdk/commit/1568c251112e06feb1d3d1df844eaa660bb9fbe8) Thanks [@DaniFoldi](https://github.com/DaniFoldi)! - fix: Bump ws dependency
+
+- [#6140](https://github.com/cloudflare/workers-sdk/pull/6140) [`4072114`](https://github.com/cloudflare/workers-sdk/commit/4072114c8ba03f35d36d14061d9a9919d61c91d5) Thanks [@petebacondarwin](https://github.com/petebacondarwin)! - fix: add extra error logging to auth response errors
+
+- [#6160](https://github.com/cloudflare/workers-sdk/pull/6160) [`9466531`](https://github.com/cloudflare/workers-sdk/commit/9466531e858ffe184ad22651a8f67999398f8a55) Thanks [@sm-bean](https://github.com/sm-bean)! - fix: removes unnecessary wrangler tail warning against resetting durable object
+
+  fixes https://jira.cfdata.org/browse/STOR-3318
+
+- [#6142](https://github.com/cloudflare/workers-sdk/pull/6142) [`9272ef5`](https://github.com/cloudflare/workers-sdk/commit/9272ef5511c2882aed6525564c1b13c3d4a3f7e5) Thanks [@dario-piotrowicz](https://github.com/dario-piotrowicz)! - fix: improve the `getPlatformProxy` `configPath` option ts-doc comment to clarify its behavior
+
+- Updated dependencies [[`7ed675e`](https://github.com/cloudflare/workers-sdk/commit/7ed675e3a43cfd996496bf1be2b31d34bde36664), [`1568c25`](https://github.com/cloudflare/workers-sdk/commit/1568c251112e06feb1d3d1df844eaa660bb9fbe8)]:
+  - miniflare@3.20240620.1
+
 ## 3.62.0
 
 ### Minor Changes
